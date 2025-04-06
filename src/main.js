@@ -9,6 +9,7 @@ import { generateFilters } from './mock/filters.js';
 const filtersContainer = document.body.querySelector('.trip-controls__filters');
 const eventsContainer = document.body.querySelector('.trip-events');
 const pointsModel = new PointsModel();
+
 const destinationsModel = new DestinationModel();
 const offersModel = new OffersModel();
 pointsModel.init();
