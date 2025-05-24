@@ -144,6 +144,7 @@ export default class EditForm extends AbstractStatefulView {
   #handleSumbit;
   #handleDelete;
 
+
   constructor({point, destinations, offers, onFormSubmit, onDeleteClick}) {
     super();
     this.#destinations = destinations;
