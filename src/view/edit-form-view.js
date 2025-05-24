@@ -47,7 +47,7 @@ function createEditFormTemplate(point, destinations, offers) {
                     </label>
                     <input class="event__input  event__input--destination"
                     id="event-destination-1" type="text" name="event-destination"
-                    value="${pointDestination.name}" list="destination-list-1"
+                    value="${pointDestination?.name || ''}" list="destination-list-1"
                     onfocus="this.value=null;"
                     onchange="this.blur();">
                     <datalist id="destination-list-1">
@@ -68,7 +68,7 @@ function createEditFormTemplate(point, destinations, offers) {
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -83,8 +83,8 @@ function createEditFormTemplate(point, destinations, offers) {
 
                     <div class="event__available-offers">
                       ${pointOffers ? pointOffers.map((offer) => `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${point.offers.includes(offer.id) ? 'checked' : ''}>
-                        <label class="event__offer-label" for="event-offer-luggage-1">
+                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${offer.id}" type="checkbox" name="event-offer-luggage" ${point.offers.includes(offer.id) ? 'checked' : ''}>
+                        <label class="event__offer-label" for="event-offer-luggage-${offer.id}">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
                           <span class="event__offer-price">${offer.price}</span>
@@ -95,7 +95,7 @@ function createEditFormTemplate(point, destinations, offers) {
 
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${pointDestination.description}</p>
+                    <p class="event__destination-description">${pointDestination?.description || ''}</p>
                     <div class="event__photos-container">
                       <div class="event__photos-tape">
                         ${destinationPictures}
@@ -113,12 +113,14 @@ export default class EditForm extends AbstractStatefulView {
   #destinations;
   #offers;
   #handleSumbit;
+  #handleDelete;
 
-  constructor({point, destinations, offers, onFormSubmit}) {
+  constructor({point, destinations, offers, onFormSubmit, onDeleteClick}) {
     super();
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleSumbit = onFormSubmit;
+    this.#handleDelete = onDeleteClick;
 
     this._setState(EditForm.pointToState(point));
     this._restoreHandlers();
@@ -133,6 +135,8 @@ export default class EditForm extends AbstractStatefulView {
     this.element.addEventListener('submit', this.#submitHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#handleChangeType);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleChangeDestination);
+    this.element.querySelector('.event__input--price').addEventListener('input', this.#changePriceHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteHandler);
 
     this.#setDatepicker();
   }
@@ -153,6 +157,12 @@ export default class EditForm extends AbstractStatefulView {
 
     this.updateElement({
       destination: selectedDestination.id
+    });
+  };
+
+  #changePriceHandler = (evt) => {
+    this._setState({
+      basePrice: Number(evt.target.value)
     });
   };
 
@@ -206,5 +216,10 @@ export default class EditForm extends AbstractStatefulView {
   #submitHandler = (evt) => {
     evt.preventDefault();
     this.#handleSumbit(EditForm.stateToPoint(this._state));
+  };
+
+  #deleteHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDelete(EditForm.stateToPoint(this._state));
   };
 }

@@ -1,7 +1,8 @@
 import PointView from '../view/point-view.js';
 import EditForm from '../view/edit-form-view.js';
 import { remove, render, replace } from '../framework/render.js';
-import { isEscapeKey } from '../utils.js';
+import { isDatesEqual, isEscapeKey } from '../utils.js';
+import { UpdateType, UserAction } from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -49,10 +50,8 @@ export default class PointPresenter {
       point: this.#point,
       offers: this.#offers,
       destinations: this.#destinations,
-      onFormSubmit: () => {
-        this.#handleSubmit(this.#point);
-        document.removeEventListener('keydown', this.#onEscKeyDownClose);
-      },
+      onFormSubmit: this.#handleSubmit,
+      onDeleteClick: this.#handleDeleteClick
     });
 
     if (prevPointComponent === null || prevEditFormComponent === null) {
@@ -85,7 +84,7 @@ export default class PointPresenter {
   }
 
   #onEscKeyDownClose = (evt) => {
-    if (isEscapeKey()) {
+    if (isEscapeKey(evt)) {
       evt.preventDefault();
       this.#replaceEditForm();
       document.removeEventListener('keydown', this.#onEscKeyDownClose);
@@ -93,12 +92,33 @@ export default class PointPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({ ...this.#point, isFavorite: !this.#point.isFavorite });
+    this.#handleDataChange(
+      UserAction.UPDATE_POINT,
+      UpdateType.PATCH,
+      { ...this.#point, isFavorite: !this.#point.isFavorite }
+    );
   };
 
-  #handleSubmit = (point) => {
-    this.#handleDataChange(point);
+  #handleSubmit = (update) => {
+    const isMinorUpdate =
+      this.#point.basePrice !== update.basePrice ||
+      !isDatesEqual(this.#point.dateFrom, update.dateFrom) ||
+      !isDatesEqual(this.#point.dateTo, update.dateTo);
+
+    this.#handleDataChange(
+      UserAction.UPDATE_POINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      update,
+    );
     this.#replaceEditForm();
+  };
+
+  #handleDeleteClick = (point) => {
+    this.#handleDataChange(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      point,
+    );
   };
 
   destroy() {
@@ -108,6 +128,7 @@ export default class PointPresenter {
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
+      this.#editFormComponent.reset();
       this.#replaceEditForm();
     }
   }
