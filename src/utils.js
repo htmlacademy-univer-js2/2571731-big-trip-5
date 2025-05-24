@@ -8,18 +8,19 @@ dayjs.extend(objectSupport);
 const formateDate = (date, format) => dayjs(date).utc().format(format);
 
 const getDuration = (dateFrom, dateTo) => {
-  const result = dayjs(dateTo).diff(dayjs(dateFrom), 'minute');
+  const date1 = dayjs(dateTo);
+  const date2 = dayjs(dateFrom);
 
-  if (result < 60) {
-    return dayjs({minute: result}).format('mm[M]');
-  } else if (result < 1440) {
-    return dayjs({minute: result}).format('HH[H] mm[M]');
-  } else {
-    const minutes = result % 60;
-    const days = Math.floor(result / (60 * 24));
-    const hours = Math.floor(result / 60) - 24 * days;
-    return `${days}D ${hours}H ${minutes}M`;
+  const days = date1.diff(date2, 'day');
+  const hours = date1.diff(date2.add(days, 'day'), 'hour');
+  const minutes = date1.diff(date2.add(days, 'day').add(hours, 'hour'), 'minute');
+
+  if (days) {
+    return `${days < 10 ? `0${days}` : days}D ${hours < 10 ? `0${hours}` : hours}H ${minutes < 10 ? `0${minutes}` : minutes}M`;
+  } else if (hours) {
+    return `${hours < 10 ? `0${hours}` : hours}H ${minutes < 10 ? `0${minutes}` : minutes}M`;
   }
+  return `${minutes < 10 ? `0${minutes}` : minutes}M`;
 };
 
 const isPointPast = (point) => dayjs().isAfter(dayjs(point.dateTo));

@@ -1,6 +1,9 @@
 import { DATE_FORMAT, POINT_TYPE } from '../const.js';
 import { createEventTypeItems, formateDate } from '../utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+import dayjs from 'dayjs';
 
 function createDestinationList(destinations) {
   return destinations.map((destination) => `<option value="${destination.name}"></option>`).join('');
@@ -104,6 +107,9 @@ function createEditFormTemplate(point, destinations, offers) {
 }
 
 export default class EditForm extends AbstractStatefulView {
+  #datepickerStart = null;
+  #datepickerEnd = null;
+
   #destinations;
   #offers;
   #handleSumbit;
@@ -127,6 +133,8 @@ export default class EditForm extends AbstractStatefulView {
     this.element.addEventListener('submit', this.#submitHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#handleChangeType);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleChangeDestination);
+
+    this.#setDatepicker();
   }
 
   #handleChangeType = (evt) => {
@@ -145,6 +153,40 @@ export default class EditForm extends AbstractStatefulView {
 
     this.updateElement({
       destination: selectedDestination.id
+    });
+  };
+
+  #setDatepicker() {
+    this.#datepickerStart = flatpickr(
+      this.element.querySelector('#event-start-time-1'), {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        locale: { firstDayOfWeek: 1 },
+        'time_24hr': true,
+        defaultDate: this._state.dateFrom,
+        onChange: this.#changeStartDateHandler
+      });
+    this.#datepickerStart = flatpickr(
+      this.element.querySelector('#event-end-time-1'), {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        locale: { firstDayOfWeek: 1 },
+        'time_24hr': true,
+        defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom || '',
+        onChange: this.#changeEndDateHandler
+      });
+  }
+
+  #changeStartDateHandler = ([newDate]) => {
+    this.updateElement({
+      dateFrom: dayjs(newDate).toISOString()
+    });
+  };
+
+  #changeEndDateHandler = ([newDate]) => {
+    this.updateElement({
+      dateTo: dayjs(newDate).toISOString()
     });
   };
 
