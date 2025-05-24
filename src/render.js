@@ -1,4 +1,4 @@
-const RenderPosition = {
+const RENDER_POSITION = {
   BEFOREBEGIN: 'beforebegin',
   AFTERBEGIN: 'afterbegin',
   BEFOREEND: 'beforeend',
@@ -12,8 +12,8 @@ function createElement(template) {
   return newElement.firstElementChild;
 }
 
-function render(component, container, place = RenderPosition.BEFOREEND) {
-  container.insertAdjacentElement(place, component.getElement());
+function render(component, container, place = RENDER_POSITION.BEFOREEND) {
+  container.insertAdjacentElement(place, component.element);
 }
 
-export {RenderPosition, createElement, render};
+export {RENDER_POSITION, createElement, render};

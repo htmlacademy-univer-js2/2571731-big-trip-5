@@ -1,5 +1,5 @@
-import { DATE_FORMAT, POINT_TYPE } from '../const.js';
-import { createEventTypeItems, formateDate } from '../utils.js';
+import { DATE_FORMAT, POINT_TYPES } from '../const.js';
+import { formateDate } from '../utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
@@ -9,20 +9,56 @@ function createDestinationList(destinations) {
   return destinations.map((destination) => `<option value="${destination.name}"></option>`).join('');
 }
 
+function createFormOffersTemplate(pointOffers, point) {
+  return pointOffers
+    .map((offer) => {
+      const checked = point.offers.includes(offer.id) ? 'checked' : '';
+      return `<div class="event__offer-selector">
+                        <input class="event__offer-checkbox  visually-hidden"
+                        id="event-offer-${offer.id}"
+                        data-offer-id="${offer.id}"
+                        type="checkbox"
+                        name="event-offer-${offer.type}-${offer.id}"
+                        ${checked}
+                        ${point.isDisabled ? 'disabled' : ''}>
+                        <label class="event__offer-label" for="event-offer-${offer.id}">
+                          <span class="event__offer-title">${offer.title}</span>
+                          &plus;&euro;&nbsp;
+                          <span class="event__offer-price">${offer.price}</span>
+                        </label>
+                      </div>`;
+    }).join('');
+}
+
+function createEventTypeItem(offers) {
+  return offers.map((offer) => `<div class="event__type-item">
+  <input id="event-type-${offer}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${offer}">
+  <label class="event__type-label  event__type-label--${offer}" for="event-type-${offer}-1">${(offer)[0].toUpperCase() + (offer).slice(1)}</label>
+</div>`).join('');
+}
+
 function createPictures(pictures) {
   return pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`);
 }
 
 function createEditFormTemplate(point, destinations, offers) {
-  const {basePrice, dateFrom, dateTo, type} = point;
+  const {basePrice, dateFrom, dateTo, type, isDisabled, isSaving, isDeleting} = point;
 
   const pointDestination = destinations.find((d) => d.id === point.destination);
   const pointOffers = offers.find((offer) => offer.type === type)?.offers;
 
+  const offersItems = createFormOffersTemplate(pointOffers, point);
   const destinationListTemplate = createDestinationList(destinations);
-  const eventTypeItems = createEventTypeItems(POINT_TYPE, type);
+  const eventTypeItems = createEventTypeItem(POINT_TYPES, type);
 
   const destinationPictures = pointDestination ? createPictures(pointDestination.pictures) : '';
+
+  let resetButtonText;
+  if (isDeleting) {
+    resetButtonText = 'Deleting...';
+  } else {
+    resetButtonText = 'Delete';
+  }
 
   return `<form class="event event--edit" action="#" method="post">
                 <header class="event__header">
@@ -71,8 +107,8 @@ function createEditFormTemplate(point, destinations, offers) {
                     <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
                   </div>
 
-                  <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Delete</button>
+                  <button class="event__save-btn  btn  btn--blue" type="submit">${isSaving ? 'Saving...' : 'Save'}</button>
+                  <button class="event__reset-btn" type="reset">${resetButtonText}</button>
                   <button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
                   </button>
@@ -82,14 +118,7 @@ function createEditFormTemplate(point, destinations, offers) {
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
                     <div class="event__available-offers">
-                      ${pointOffers ? pointOffers.map((offer) => `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${offer.id}" type="checkbox" name="event-offer-luggage" ${point.offers.includes(offer.id) ? 'checked' : ''}>
-                        <label class="event__offer-label" for="event-offer-luggage-${offer.id}">
-                          <span class="event__offer-title">${offer.title}</span>
-                          &plus;&euro;&nbsp;
-                          <span class="event__offer-price">${offer.price}</span>
-                        </label>
-                      </div>`).join('') : ''}
+                      ${offersItems}
                     </div>
                   </section>
 
@@ -137,6 +166,11 @@ export default class EditForm extends AbstractStatefulView {
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleChangeDestination);
     this.element.querySelector('.event__input--price').addEventListener('input', this.#changePriceHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteHandler);
+
+    if (this.element.querySelector('.event__section--offers')) {
+      this.element.querySelector('.event__section--offers')
+        .addEventListener('change', this.#offerChangeHandler);
+    }
 
     this.#setDatepicker();
   }
@@ -221,5 +255,19 @@ export default class EditForm extends AbstractStatefulView {
   #deleteHandler = (evt) => {
     evt.preventDefault();
     this.#handleDelete(EditForm.stateToPoint(this._state));
+  };
+
+  #offerChangeHandler = (evt) => {
+    const currentOffer = evt.target.dataset.offerId;
+
+    if (evt.target.checked) {
+      this._setState({
+        offers: [...this._state.offers, currentOffer]
+      });
+    } else {
+      this._setState({
+        offers: this._state.offers.filter((offer) => offer !== currentOffer)
+      });
+    }
   };
 }

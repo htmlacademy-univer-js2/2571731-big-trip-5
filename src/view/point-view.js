@@ -2,10 +2,33 @@ import { formateDate, getDuration } from '../utils.js';
 import { DATE_FORMAT } from '../const.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
+//pointOffers ? pointOffers.map((offer) => `<li class="event__offer">
+// <span class="event__offer-title">${offer.title}</span>
+// &plus;&euro;&nbsp;
+// <span class="event__offer-price">${offer.price}</span>
+// </li>`).join('') : ''
+function createPointOffersTemplate(pointOffers, point) {
+  if (!pointOffers || pointOffers.length === 0) {
+    return '';
+  }
+  return pointOffers
+    .map((offer) =>
+      point.offers.includes(offer.id)
+        ? `<li class="event__offer">
+            <span class="event__offer-title">${offer.title}</span>
+            &plus;&euro;&nbsp;
+            <span class="event__offer-price">${offer.price}</span>
+          </li>`
+        : ''
+    )
+    .join('');
+}
+
 function createPointTemplate(point, destinations, offers) {
   const {basePrice, dateFrom, dateTo, isFavorite, type} = point;
   const pointDestination = destinations.find((d) => d.id === point.destination);
-  const pointOffers = offers.find((offer) => offer.type === type)?.offers.filter((offer) => point.offers.includes(offer.id));
+  const pointOffers = offers.find((offer) => offer.type === type)?.offers;
+  //.filter((offer) => point.offers.includes(offer.id))
 
   return `<li class="trip-events__item">
               <div class="event">
@@ -27,11 +50,7 @@ function createPointTemplate(point, destinations, offers) {
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
                 <ul class="event__selected-offers">
-                  ${pointOffers ? pointOffers.map((offer) => `<li class="event__offer">
-                      <span class="event__offer-title">${offer.title}</span>
-                      &plus;&euro;&nbsp;
-                      <span class="event__offer-price">${offer.price}</span>
-                    </li>`).join('') : ''}
+                  ${createPointOffersTemplate(pointOffers, point)}
                 </ul>
                 <button class="event__favorite-btn ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
                   <span class="visually-hidden">Add to favorite</span>
