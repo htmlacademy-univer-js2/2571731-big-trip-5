@@ -8,6 +8,11 @@ export const DATE_FORMAT = {
   'full-date-and-time': 'YYYY-MM-DDTHH:mm',
   'full-date-and-time-slash': 'DD/MM/YYYY HH:mm'
 };
+export const SORT_TYPE = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price'
+};
 
 export const FILTERS_TYPE = {
   EVERYTHING:'everything',

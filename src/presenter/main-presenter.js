@@ -1,63 +1,60 @@
-import PointView from '../view/point-view.js';
-import EmptyPoints from '../view/empty-points-list-view.js';
+import {generateFilters} from '../mock/filters.js';
+import Filters from '../view/filters-view.js';
 import PointsList from '../view/points-list-view.js';
-import CreateForm from '../view/create-form-view.js';
-import EditForm from '../view/edit-form-view.js';
-import { render, replace } from '../framework/render.js';
-import Sort from '../view/sort-view.js';
+import { render } from '../framework/render.js';
+import { updateItem } from '../utils.js';
+import PointsPresenter from './points-presenter.js';
 
 export default class Presenter {
-  createFormViewComponent = new CreateForm();
-  pointsListViewComponent = new PointsList();
+  #eventsContainer = null;
+  #filterContainer = null;
+  #pointsModel = null;
+  #destinationsModel = null;
+  #offersModel = null;
+  #pointsListViewComponent = new PointsList();
+  #pointsPresenter = null;
 
-  constructor({container, pointsModel, destinationsModel, offersModel}) {
-    this.container = container;
-    this.pointsModel = pointsModel;
-    this.destinationsModel = destinationsModel;
-    this.offersModel = offersModel;
+  constructor({eventsContainer, filtersContainer, pointsModel, destinationsModel, offersModel}) {
+    this.#filterContainer = filtersContainer;
+    this.#eventsContainer = eventsContainer;
+    this.#pointsModel = pointsModel;
+    this.#destinationsModel = destinationsModel;
+    this.#offersModel = offersModel;
   }
 
   init() {
-    const points = this.pointsModel.getPoints();
-    const destinations = this.destinationsModel.getDestinations();
-    const offers = this.offersModel.getOffers();
-    if (points.length === 0) {
-      render(new EmptyPoints(), this.container);
-    } else {
-      render(new Sort(), this.container);
-      render(this.pointsListViewComponent, this.container);
-      for (const point of points) {
-        this.#renderPoint(point, destinations, offers);
-      }
-    }
+    this.points = this.#pointsModel.getPoints();
+    this.destinations = this.#destinationsModel.getDestinations();
+    this.offers = this.#offersModel.getOffers();
+
+    this.renderPage();
   }
 
-  #renderPoint(point, destinations, offers) {
-    const onEscKeyDownClose = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceEditForm();
-        document.removeEventListener('keydown', onEscKeyDownClose);
-      }
-    };
+  renderPage() {
+    this.#renderFilters();
 
-    const pointElement = new PointView(point, destinations, offers, () => {
-      replacePoint();
-      document.addEventListener('keydown', onEscKeyDownClose);
+    render(this.#pointsListViewComponent, this.#eventsContainer);
+    this.#renderPoints();
+  }
+
+  #renderPoints() {
+    this.#pointsPresenter = new PointsPresenter({
+      pointsModel: this.#pointsModel,
+      destinationsModel: this.#destinationsModel,
+      offersModel: this.#offersModel,
+      pointsListView: this.#pointsListViewComponent,
+      eventsContainer: this.#eventsContainer
     });
-    const editFormElement = new EditForm(point, destinations, offers, () => {
-      replaceEditForm();
-      document.removeEventListener('keydown', onEscKeyDownClose);
-    });
+    this.#pointsPresenter.init();
+  }
 
-    function replacePoint() {
-      replace(editFormElement, pointElement);
-    }
+  handleEventChange = (updatedPoint) => {
+    this.points = updateItem(this.points, updatedPoint);
+    this.#pointsPresenter.updatePoint(updatedPoint);
+  };
 
-    function replaceEditForm() {
-      replace(pointElement, editFormElement);
-    }
-
-    render(pointElement, this.pointsListViewComponent.element);
+  #renderFilters() {
+    const filters = generateFilters(this.points);
+    render(new Filters({filters}), this.#filterContainer);
   }
 }

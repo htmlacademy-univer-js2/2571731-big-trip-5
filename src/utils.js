@@ -28,4 +28,24 @@ const isPointFuture = (point) => dayjs().isBefore(dayjs(point.dateFrom));
 
 const isPointPresent = (point) => dayjs().isAfter(dayjs(point.dateFrom)) && dayjs().isBefore(dayjs(point.dateTo));
 
-export {formateDate, getDuration, isPointFuture, isPointPast, isPointPresent};
+const isEscapeKey = (evt) => evt.key === 'Escape';
+
+function updateItem(items, update) {
+  return items.map((item) => item.id === update.id ? update : item);
+}
+
+function sortPointsByDate(pointA, pointB) {
+  return dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
+}
+
+function sortPointsByTime(pointA, pointB) {
+  const pointADur = dayjs(pointA.dateTo).diff(dayjs(pointA.dateFrom), 'minute');
+  const pointBDur = dayjs(pointB.dateTo).diff(dayjs(pointB.dateFrom), 'minute');
+  return pointBDur - pointADur;
+}
+
+function sortPointsByPrice(pointA, pointB) {
+  return pointB.basePrice - pointA.basePrice;
+}
+
+export {formateDate, getDuration, isPointFuture, isPointPast, isPointPresent, isEscapeKey, updateItem, sortPointsByDate, sortPointsByPrice, sortPointsByTime};
