@@ -7,9 +7,9 @@ import { FILTERS_TYPE } from './const.js';
 dayjs.extend(utc);
 dayjs.extend(objectSupport);
 
-const formateDate = (date, format) => dayjs(date).utc().format(format);
+export const formateDate = (date, format) => dayjs(date).utc().format(format);
 
-const getDuration = (dateFrom, dateTo) => {
+export const getDuration = (dateFrom, dateTo) => {
   const date1 = dayjs(dateTo);
   const date2 = dayjs(dateFrom);
 
@@ -25,52 +25,46 @@ const getDuration = (dateFrom, dateTo) => {
   return `${minutes < 10 ? `0${minutes}` : minutes}M`;
 };
 
-const isPointPast = (point) => dayjs().isAfter(dayjs(point.dateTo));
+export const isPointPast = (point) => dayjs().isAfter(dayjs(point.dateTo));
 
-const isPointFuture = (point) => dayjs().isBefore(dayjs(point.dateFrom));
+export const isPointFuture = (point) => dayjs().isBefore(dayjs(point.dateFrom));
 
-const isPointPresent = (point) => dayjs().isAfter(dayjs(point.dateFrom)) && dayjs().isBefore(dayjs(point.dateTo));
+export const isPointPresent = (point) => dayjs().isAfter(dayjs(point.dateFrom)) && dayjs().isBefore(dayjs(point.dateTo));
 
-const isEscapeKey = (evt) => evt.key === 'Escape';
+export const isEscapeKey = (evt) => evt.key === 'Escape';
 
-function updateItem(items, update) {
+export function updateItem(items, update) {
   return items.map((item) => item.id === update.id ? update : item);
 }
 
-function sortPointsByDate(pointA, pointB) {
+export function sortPointsByDate(pointA, pointB) {
   return dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
 }
 
-function sortPointsByTime(pointA, pointB) {
+export function sortPointsByTime(pointA, pointB) {
   const pointADur = dayjs(pointA.dateTo).diff(dayjs(pointA.dateFrom), 'minute');
   const pointBDur = dayjs(pointB.dateTo).diff(dayjs(pointB.dateFrom), 'minute');
   return pointBDur - pointADur;
 }
 
-function sortPointsByPrice(pointA, pointB) {
+export function sortPointsByPrice(pointA, pointB) {
   return pointB.basePrice - pointA.basePrice;
 }
 
-function createEventTypeItems(pointTypes, currentType) {
-  return pointTypes.map((type) => `<div class="event__type-item">
-  <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${currentType === type ? 'checked' : ''}>
-  <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${(type)[0].toUpperCase() + (type).slice(1)}</label>
-</div>`).join('');
-}
+// export function createEventTypeItems(pointTypes, currentType) {
+//   return pointTypes.map((type) => `<div class="event__type-item">
+//   <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${currentType === type ? 'checked' : ''}>
+//   <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${(type)[0].toUpperCase() + (type).slice(1)}</label>
+// </div>`).join('');
+// }
 
-const filter = {
+export const filter = {
   [FILTERS_TYPE.EVERYTHING]: (points) => [...points],
   [FILTERS_TYPE.PAST]: (points) => points.filter((point) => isPointPast(point)),
   [FILTERS_TYPE.PRESENT]: (points) => points.filter((point) => isPointPresent(point)),
   [FILTERS_TYPE.FUTURE]: (points) => points.filter((point) => isPointFuture(point)),
 };
 
-function isDatesEqual(dateA, dateB) {
+export function isDatesEqual(dateA, dateB) {
   return (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
 }
-
-function getRandomArrayElement(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-export {filter, getRandomArrayElement, isDatesEqual, formateDate, getDuration, isPointFuture, isPointPast, isPointPresent, isEscapeKey, updateItem, sortPointsByDate, sortPointsByPrice, sortPointsByTime, createEventTypeItems};

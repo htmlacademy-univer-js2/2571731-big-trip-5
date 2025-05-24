@@ -1,6 +1,5 @@
 import { remove, render, RenderPosition } from '../framework/render.js';
 import EditFormView from '../view/edit-form-view.js';
-import { nanoid } from 'nanoid';
 import { UserAction, UpdateType } from '../const.js';
 import { isEscapeKey } from '../utils.js';
 
@@ -63,7 +62,7 @@ export default class NewPointPresenter {
     this.#handleDataChange(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      {...point, id: nanoid()},
+      point,
     );
     this.destroy();
   };
@@ -78,4 +77,23 @@ export default class NewPointPresenter {
       this.destroy();
     }
   };
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#editFormComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#editFormComponent.shake(resetFormState);
+  }
+
+  setSaving() {
+    this.#editFormComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
 }

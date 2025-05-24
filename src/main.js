@@ -6,15 +6,22 @@ import FilterPresenter from './presenter/filter-presenter.js';
 import FilterModel from './model/filter-model.js';
 import { render } from './framework/render.js';
 import NewPointButtonView from './view/new-point-button.js';
+import PointsApiService from './points-api-service.js';
+
+const AUTHORIZATION = 'Basic hg19gk364u';
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
+const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
 
 const filtersContainer = document.body.querySelector('.trip-controls__filters');
 const eventsContainer = document.body.querySelector('.trip-events');
 const siteHeaderElement = document.body.querySelector('.trip-main');
 
-const pointsModel = new PointsModel();
-const destinationsModel = new DestinationModel();
-const offersModel = new OffersModel();
+const pointsModel = new PointsModel({pointsApiService});
+const destinationsModel = new DestinationModel({pointsApiService});
+const offersModel = new OffersModel({pointsApiService});
 const filterModel = new FilterModel();
+
+pointsModel.init();
 destinationsModel.init();
 offersModel.init();
 

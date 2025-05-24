@@ -1,4 +1,4 @@
-export const POINT_TYPE = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+export const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 export const DATE_FORMAT = {
   'full-date': 'YYYY-MM-DD',
   'month-day': 'MMM DD',
@@ -29,6 +29,12 @@ export const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT'
+};
+
+export const TIME_LIMIT = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
 };
 
 export const NO_POINT_MESSAGES = {
