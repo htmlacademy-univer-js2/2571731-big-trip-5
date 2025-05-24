@@ -1,5 +1,3 @@
-import { isPointPast, isPointFuture, isPointPresent } from './utils';
-
 export const POINT_TYPE = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 export const DATE_FORMAT = {
   'full-date': 'YYYY-MM-DD',
@@ -21,9 +19,21 @@ export const FILTERS_TYPE = {
   PAST:'past',
 };
 
-export const FILTERS_GENERATOR = {
-  [FILTERS_TYPE.EVERYTHING]: (points) => [...points],
-  [FILTERS_TYPE.PAST]: (points) => points.filter((point) => isPointPast(point)),
-  [FILTERS_TYPE.PRESENT]: (points) => points.filter((point) => isPointPresent(point)),
-  [FILTERS_TYPE.FUTURE]: (points) => points.filter((point) => isPointFuture(point)),
+export const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT',
+};
+
+export const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+export const NO_POINT_MESSAGES = {
+  EVERYTHING: 'Click New Event to create your first point',
+  PAST: 'There are no past events now',
+  PRESENT: 'There are no present events now',
+  FUTURE: 'There are no future events now'
 };

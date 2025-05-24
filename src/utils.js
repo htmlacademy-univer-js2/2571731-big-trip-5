@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import objectSupport from 'dayjs/plugin/objectSupport';
+import { FILTERS_TYPE } from './const.js';
+
 
 dayjs.extend(utc);
 dayjs.extend(objectSupport);
@@ -56,4 +58,19 @@ function createEventTypeItems(pointTypes, currentType) {
 </div>`).join('');
 }
 
-export {formateDate, getDuration, isPointFuture, isPointPast, isPointPresent, isEscapeKey, updateItem, sortPointsByDate, sortPointsByPrice, sortPointsByTime, createEventTypeItems};
+const filter = {
+  [FILTERS_TYPE.EVERYTHING]: (points) => [...points],
+  [FILTERS_TYPE.PAST]: (points) => points.filter((point) => isPointPast(point)),
+  [FILTERS_TYPE.PRESENT]: (points) => points.filter((point) => isPointPresent(point)),
+  [FILTERS_TYPE.FUTURE]: (points) => points.filter((point) => isPointFuture(point)),
+};
+
+function isDatesEqual(dateA, dateB) {
+  return (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
+}
+
+function getRandomArrayElement(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+export {filter, getRandomArrayElement, isDatesEqual, formateDate, getDuration, isPointFuture, isPointPast, isPointPresent, isEscapeKey, updateItem, sortPointsByDate, sortPointsByPrice, sortPointsByTime, createEventTypeItems};
