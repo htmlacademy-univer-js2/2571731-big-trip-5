@@ -90,7 +90,7 @@ export default class Presenter {
       return;
     }
 
-    if (this.points.includes('error') || this.#destinationsModel.destinations.length === 0 || this.#offersModel.offers.length === 0) {
+    if (this.points.includes('error') || !this.#destinationsModel.destinations || !this.#offersModel.offers) {
       this.#renderError();
       return;
     }
