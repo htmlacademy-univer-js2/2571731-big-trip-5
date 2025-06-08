@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
 function createFilterItemTemplate(filter, currentFilterType) {
-  const count = filter.points.length;
+  const count = filter.count;
   return (
     ` <div class="trip-filters__filter">
         <input id="filter-${filter.type}"
