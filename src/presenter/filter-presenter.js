@@ -3,7 +3,6 @@ import { remove, render, replace } from '../framework/render';
 import { filter } from '../utils';
 import Filters from '../view/filters-view';
 
-
 export default class FilterPresenter {
   #filterContainer = null;
   #filterModel = null;
@@ -23,7 +22,7 @@ export default class FilterPresenter {
     const points = this.#pointsModel.points;
     return Object.values(FILTERS_TYPE).map((type) => ({
       type,
-      points: filter[type](points)
+      count: filter[type](points).length
     }));
   }
 

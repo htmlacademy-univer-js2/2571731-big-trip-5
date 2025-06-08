@@ -2,26 +2,22 @@ import PointView from '../view/point-view.js';
 import EditForm from '../view/edit-form-view.js';
 import { remove, render, replace } from '../framework/render.js';
 import { isDatesEqual, isEscapeKey } from '../utils.js';
-import { UpdateType, UserAction } from '../const.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
+import { MODE, UpdateType, UserAction } from '../const.js';
 
 export default class PointPresenter {
   #pointListContainer = null;
   #handleDataChange = null;
   #handleModeChange = null;
+
   #offers = [];
   #destinations = [];
 
   #point = null;
   #pointComponent = null;
   #editFormComponent = null;
-  #mode = Mode.DEFAULT;
+  #mode = MODE.DEFAULT;
 
-  constructor({pointListContainer, offers, destinations, onDataChange, onModeChange}) {
+  constructor({ pointListContainer, offers, destinations, onDataChange, onModeChange }) {
     this.#pointListContainer = pointListContainer;
     this.#offers = offers;
     this.#destinations = destinations;
@@ -40,8 +36,7 @@ export default class PointPresenter {
       destinations: this.#destinations,
       offers: this.#offers,
       onEditClick: () => {
-        this.#replacePoint();
-        document.addEventListener('keydown', this.#onEscKeyDownClose);
+        this.#replacePointToEditForm();
       },
       onFavoriteClick: this.#handleFavoriteClick,
     });
@@ -51,6 +46,7 @@ export default class PointPresenter {
       offers: this.#offers,
       destinations: this.#destinations,
       onFormSubmit: this.#handleSubmit,
+      onDiscardChanges: this.#handleDiscardChanges,
       onDeleteClick: this.#handleDeleteClick
     });
 
@@ -59,36 +55,36 @@ export default class PointPresenter {
       return;
     }
 
-    if (this.#mode === Mode.DEFAULT) {
+    if (this.#mode === MODE.DEFAULT) {
       replace(this.#pointComponent, prevPointComponent);
     }
 
-    if (this.#mode === Mode.EDITING) {
+    if (this.#mode === MODE.EDITING) {
       replace(this.#pointComponent, prevEditFormComponent);
-      this.#mode = Mode.DEFAULT;
-      // replace(this.#editFormComponent, prevEditFormComponent);
+      this.#mode = MODE.DEFAULT;
     }
 
     remove(prevPointComponent);
     remove(prevEditFormComponent);
   }
 
-  #replacePoint() {
+  #replacePointToEditForm() {
     replace(this.#editFormComponent, this.#pointComponent);
     this.#handleModeChange();
-    this.#mode = Mode.EDITING;
+    this.#mode = MODE.EDITING;
+    document.addEventListener('keydown', this.#onEscKeyDownClose);
   }
 
-  #replaceEditForm() {
+  #replaceEditFormToPoint() {
     replace(this.#pointComponent, this.#editFormComponent);
     document.removeEventListener('keydown', this.#onEscKeyDownClose);
-    this.#mode = Mode.DEFAULT;
+    this.#mode = MODE.DEFAULT;
   }
 
   #onEscKeyDownClose = (evt) => {
     if (isEscapeKey(evt)) {
       evt.preventDefault();
-      this.#replaceEditForm();
+      this.#handleDiscardChanges();
       document.removeEventListener('keydown', this.#onEscKeyDownClose);
     }
   };
@@ -112,7 +108,6 @@ export default class PointPresenter {
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       update,
     );
-    this.#replaceEditForm();
   };
 
   #handleDeleteClick = (point) => {
@@ -123,20 +118,25 @@ export default class PointPresenter {
     );
   };
 
+  #handleDiscardChanges = () => {
+    this.#editFormComponent.reset(this.#point);
+    this.#replaceEditFormToPoint();
+  };
+
   destroy() {
     remove(this.#pointComponent);
     remove(this.#editFormComponent);
   }
 
   resetView() {
-    if (this.#mode !== Mode.DEFAULT) {
-      this.#editFormComponent.reset();
-      this.#replaceEditForm();
+    if (this.#mode !== MODE.DEFAULT) {
+      this.#editFormComponent.reset(this.#point);
+      this.#replaceEditFormToPoint();
     }
   }
 
   setSaving() {
-    if (this.#mode === Mode.EDITING) {
+    if (this.#mode === MODE.EDITING) {
       this.#editFormComponent.updateElement({
         isDisabled: true,
         isSaving: true,
@@ -145,7 +145,7 @@ export default class PointPresenter {
   }
 
   setDeleting() {
-    if (this.#mode === Mode.EDITING) {
+    if (this.#mode === MODE.EDITING) {
       this.#editFormComponent.updateElement({
         isDisabled: true,
         isDeleting: true,
@@ -154,7 +154,7 @@ export default class PointPresenter {
   }
 
   setAborting() {
-    if (this.#mode === Mode.DEFAULT) {
+    if (this.#mode === MODE.DEFAULT) {
       this.#pointComponent.shake();
       return;
     }

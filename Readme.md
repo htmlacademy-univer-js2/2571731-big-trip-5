@@ -1,6 +1,6 @@
 # Проект «Большое путешествие»
 
-* Студент: [Владислав Некрасов](https://up.htmlacademy.ru/univer-js2/5/user/2571731).
+* Студент: [Климентий Котлов](https://up.htmlacademy.ru/univer-js2/5/user/2506725).
 * Наставник: `Евгений Лепёшкин`.
 
 ---
@@ -48,5 +48,5 @@ git clone SSH-адрес_вашего_форка
 
 Репозиторий создан для обучения на профессиональном курсе «[JavaScript. Архитектура клиентских приложений](https://htmlacademy.ru/intensive/ecmascript)» от [HTML Academy](https://htmlacademy.ru).
 
-[check-image]: https://github.com/htmlacademy-ecmascript/2571731-big-trip-5/workflows/Project%20check/badge.svg?branch=master
-[check-url]: https://github.com/htmlacademy-ecmascript/2571731-big-trip-5/actions
+[check-image]: https://github.com/htmlacademy-ecmascript/2506725-big-trip-5/workflows/Project%20check/badge.svg?branch=master
+[check-url]: https://github.com/htmlacademy-ecmascript/2506725-big-trip-5/actions

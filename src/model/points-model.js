@@ -1,6 +1,5 @@
 import { UpdateType } from '../const.js';
 import Observable from '../framework/observable.js';
-import dayjs from 'dayjs';
 
 
 export default class PointsModel extends Observable{
@@ -30,8 +29,8 @@ export default class PointsModel extends Observable{
   get newPoint() {
     return {
       basePrice: 0,
-      dateFrom: dayjs().toISOString(),
-      dateTo: dayjs().toISOString(),
+      dateFrom: null,
+      dateTo: null,
       destination: '',
       isFavorite: false,
       offers: [],
