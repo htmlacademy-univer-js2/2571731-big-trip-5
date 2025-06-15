@@ -1,69 +1,63 @@
-import Presenter from './presenter/main-presenter.js';
-import PointsModel from './model/points-model.js';
-import DestinationModel from './model/destinatione-model.js';
-import OffersModel from './model/offers-model.js';
+import MainPresenter from './presenter/list-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import FilterModel from './model/filter-model.js';
-import { remove, render } from './framework/render.js';
-import NewPointButtonView from './view/new-point-button.js';
-import PointsApiService from './points-api-service.js';
-import LoadingView from './view/loading-view.js';
+import PointModel from './model/point-model.js';
+import OfferModel from './model/offer-model.js';
+import DestinationModel from './model/destination-model.js';
+import NewPointView from './view/new-point-view.js';
+import { render, RenderPosition } from './framework/render.js';
+import PointsApiService from './api/point-api-service.js';
+import OffersApiService from './api/offer-api-service.js';
+import DestinationsApiService from './api/destination-api-service.js';
+import RoutePresenter from './presenter/route-presenter.js';
 
-const AUTHORIZATION = 'Basic hg19gk364u';
+const AUTHORIZATION = 'Basic ssj52f854f3h3v9f';
 const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
-const pointsApiService = new PointsApiService(END_POINT, AUTHORIZATION);
+const siteHeaderFiltersElement = document.querySelector('.trip-controls__filters');
+const siteBodySortElement = document.querySelector('.trip-events');
+const siteHeaderElement = document.querySelector('.trip-main');
 
-const filtersContainer = document.body.querySelector('.trip-controls__filters');
-const eventsContainer = document.body.querySelector('.trip-events');
-const siteHeaderContainer = document.body.querySelector('.trip-main');
 
-const pointsModel = new PointsModel({pointsApiService});
-const destinationsModel = new DestinationModel({pointsApiService});
-const offersModel = new OffersModel({pointsApiService});
 const filterModel = new FilterModel();
+const pointModel = new PointModel(new PointsApiService(END_POINT, AUTHORIZATION));
+const offerModel = new OfferModel(new OffersApiService(END_POINT, AUTHORIZATION));
+const destinationModel = new DestinationModel(new DestinationsApiService(END_POINT, AUTHORIZATION));
 
-const presenter = new Presenter({
-  eventsContainer: eventsContainer,
-  tripInfoContainer: siteHeaderContainer,
-  pointsModel: pointsModel,
-  destinationsModel: destinationsModel,
-  offersModel: offersModel,
-  filterModel: filterModel,
-  onNewPointDestroy: handleNewPointFormClose
-});
 
-const filterPresenter = new FilterPresenter({
-  filterContainer: filtersContainer,
-  filterModel: filterModel,
-  pointsModel: pointsModel
-});
+new RoutePresenter(siteHeaderElement, pointModel, offerModel, destinationModel);
 
-const newPointButtonComponent = new NewPointButtonView({
-  onClick: handleNewPointButtonClick
-});
+const filterPresenter = new FilterPresenter(
+  siteHeaderFiltersElement,
+  filterModel,
+  pointModel
+);
 
-function handleNewPointFormClose() {
+const mainPresenter = new MainPresenter(
+  siteBodySortElement,
+  pointModel,
+  offerModel,
+  destinationModel,
+  filterModel,
+  onNewPointFormClose
+);
+
+
+const newPointButtonComponent = new NewPointView(onNewPointButtonClick);
+
+function onNewPointFormClose() {
   newPointButtonComponent.element.disabled = false;
 }
 
-function handleNewPointButtonClick() {
-  presenter.createPoint();
+function onNewPointButtonClick() {
+  mainPresenter.createPoint();
   newPointButtonComponent.element.disabled = true;
 }
-
 filterPresenter.init();
-const loadingComponent = new LoadingView();
-render(loadingComponent, eventsContainer);
-
+mainPresenter.init();
 Promise.all([
-  offersModel.init(),
-  destinationsModel.init(),
-  pointsModel.init()
+  pointModel.init(),
+  offerModel.init(),
+  destinationModel.init()
 ]).then(() => {
-  remove(loadingComponent);
-  presenter.init();
-}).catch(() => {
-  remove(loadingComponent);
-}).finally(() => {
-  render(newPointButtonComponent, siteHeaderContainer);
+  render(newPointButtonComponent, siteHeaderElement, RenderPosition.BEFOREEND);
 });
