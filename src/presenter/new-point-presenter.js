@@ -1,104 +1,93 @@
 import { remove, render, RenderPosition } from '../framework/render.js';
-import EditFormView from '../view/edit-form-view.js';
 import { UserAction, UpdateType } from '../const.js';
-import { isEscapeKey } from '../utils.js';
+import EditFormView from '../view/edit-form-view.js';
+import { OnEscKeyDown } from '../utils/utls.js';
 
 export default class NewPointPresenter {
-  #pointsModel = null;
-  #destinationsModel = null;
-  #offersModel = null;
-
   #pointListContainer = null;
-  #handleDataChange = null;
-  #handleDestroy = null;
+  #onDataChange = null;
+  #onDestroy = null;
 
-  #editFormComponent = null;
+  #pointEditComponent = null;
 
-  constructor({ pointListContainer, pointsModel, offersModel, destinationsModel, onDataChange, onDestroy }) {
+  constructor(pointListContainer, onDataChange, onDestroy) {
     this.#pointListContainer = pointListContainer;
-    this.#pointsModel = pointsModel;
-    this.#destinationsModel = destinationsModel;
-    this.#offersModel = offersModel;
-    this.#handleDataChange = onDataChange;
-    this.#handleDestroy = onDestroy;
+    this.#onDataChange = onDataChange;
+    this.#onDestroy = onDestroy;
   }
 
-  init() {
-    if (this.#editFormComponent !== null) {
+  init(offerModel, destinationModel) {
+    if (this.#pointEditComponent !== null) {
       return;
     }
+    const blankPoint = {
+      basePrice: 0,
+      dateFrom: '',
+      dateTo: '',
+      destination: '',
+      offers: [],
+      type: 'flight',
+      isFavorite: false
+    };
 
-    this.#editFormComponent = new EditFormView({
-      point: this.#pointsModel.newPoint,
-      destinations: this.#destinationsModel.destinations,
-      offers: this.#offersModel.offers,
-      isCreating: true,
-      onFormSubmit: this.#handleFormSubmit,
-      onDiscardChanges: this.#handleDeleteClick,
-      onDeleteClick: this.#handleDeleteClick
-    });
+    this.#pointEditComponent = new EditFormView(
+      blankPoint,
+      offerModel,
+      destinationModel,
+      this.#onFormSubmit,
+      this.#onDeleteClick
+    );
 
-    render(this.#editFormComponent, this.#pointListContainer, RenderPosition.AFTERBEGIN);
+    render(this.#pointEditComponent, this.#pointListContainer, RenderPosition.AFTERBEGIN);
 
-    document.addEventListener('keydown', this.#escKeyDownHandler);
+    document.addEventListener('keydown', this.#onEscKeyDown);
   }
 
   destroy() {
-    if (this.#editFormComponent === null) {
+    if (this.#pointEditComponent === null) {
       return;
     }
 
-    this.#handleDestroy();
+    this.#onDestroy();
 
-    remove(this.#editFormComponent);
-    this.#editFormComponent = null;
+    remove(this.#pointEditComponent);
+    this.#pointEditComponent = null;
 
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    document.removeEventListener('keydown', this.#onEscKeyDown);
   }
 
-  #handleFormSubmit = (point) => {
-    this.#handleDataChange(
-      UserAction.ADD_POINT,
-      UpdateType.MINOR,
-      point,
-    );
-  };
-
-  #handleDeleteClick = () => {
-    this.destroy();
-  };
-
-  #escKeyDownHandler = (evt) => {
-    if (isEscapeKey(evt)) {
-      evt.preventDefault();
-      this.destroy();
-    }
-  };
+  setSaving() {
+    this.#pointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
 
   setAborting() {
-    if (!this.#editFormComponent) {
-      return;
-    }
-
     const resetFormState = () => {
-      if (!this.#editFormComponent) {
-        return;
-      }
-
-      this.#editFormComponent.updateElement({
+      this.#pointEditComponent.updateElement({
         isDisabled: false,
         isSaving: false,
         isDeleting: false,
       });
     };
 
-    this.#editFormComponent.shake(resetFormState);
+    this.#pointEditComponent.shake(resetFormState);
   }
 
-  setSaving() {
-    this.#editFormComponent.updateElement({
-      isDisabled: true,
-      isSaving: true,
-    });
-  }
+  #onFormSubmit = (_, point) => {
+    this.#onDataChange(
+      UserAction.ADD_POINT,
+      UpdateType.MINOR,
+      point,
+    );
+  };
+
+  #onDeleteClick = () => {
+    this.destroy();
+  };
+
+  #onEscKeyDown = (evt) => {
+    OnEscKeyDown(evt, this.destroy.bind(this));
+  };
 }
